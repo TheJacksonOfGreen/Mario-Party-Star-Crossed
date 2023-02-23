@@ -12,7 +12,7 @@ public class DuelSpace : BoardSpace {
         // TODO: Bring in Boom Boom
         ui.Dialogue("Boom Boom", "Listen up, shrimpy! You and someone else are gonna go play a Duel Minigame! You'll each bet some coins or stars, and the winner TAKES IT ALL!", false);
         yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
-        List<PlayerState> players = new List<PlayerState>(gsm.state.GetPlayers());
+        List<PlayerState> players = new List<PlayerState>(game.state.GetPlayers());
         players.Remove(p.state);
         if ((p.state.getCoins() >= 5 && (players[0].getCoins() >= 5 || players[1].getCoins() >= 5 || players[2].getCoins() >= 5)) || ((p.state.getCoins() >= 30 || p.state.getStars() >= 1) && (players[0].getStars() >= 1 || players[1].getStars() >= 1 || players[2].getStars() >= 1))) {
             List<string> duelOptions = new List<string>();

@@ -9,14 +9,14 @@ public abstract class BoardSpace : MonoBehaviour {
     public int id;
 
     protected UIManager ui;
-    protected GameStateManager gsm;
+    protected BoardManager game;
     protected bool donePassing;
     protected bool doneLanding;
 
     // Start is called before the first frame update
     void Start() {
         ui = FindObjectOfType<UIManager>();
-        gsm = FindObjectOfType<GameStateManager>();
+        game = FindObjectOfType<BoardManager>();
     }
 
     // Update is called once per frame
