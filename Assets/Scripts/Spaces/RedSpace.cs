@@ -3,7 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class RedSpace : BoardSpace {
+    [Tooltip("Prefab of coin object.")]
     public GameObject coinPrefab;
+    
+    public override void setup() {
+        this.blueChance = 0;
+    }
 
     public override IEnumerator land(Player p) {
         doneLanding = false;

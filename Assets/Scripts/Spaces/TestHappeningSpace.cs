@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class TestHappeningSpace : BoardSpace {
+    [Tooltip("Prefab of coin object.")]
     public GameObject coinPrefab;
 
     public override IEnumerator land(Player p) {
+        this.canLandHere = false;
         doneLanding = false;
         ui.Dialogue("Hey, thanks for playing my demo! Here, take 10 Coins!", true);
         yield return new WaitUntil(() => ui.WaitForDialogueAnswer());

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class DuelSpace : BoardSpace {
-    public GameObject coinPrefab;
+    public override void setup() {
+        this.blueChance = 37;
+    }
 
     public override IEnumerator land(Player p) {
         doneLanding = false;
