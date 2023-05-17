@@ -7,6 +7,8 @@ public class DiceBlock : MonoBehaviour {
     public float rotationSpeed;
     public List<ParticleSystem> particles;
     public bool magic;
+    [Tooltip("Set to anything other than 0 to force a certain roll.")]
+    public int debugRoll = 0;
 
     private int currentRoll;
     private int maxRoll;
@@ -25,7 +27,7 @@ public class DiceBlock : MonoBehaviour {
         followers = new List<Transform>();
 
         if (transform.parent.gameObject.GetComponent<Player>() != null) {
-            transform.position = Vector3.up * 3.0f;
+            transform.position = transform.parent.position + (Vector3.up * 3.0f);
         } else if (transform.parent.gameObject.GetComponent<DiceBlock>() != null) {
             leader = false;
             transform.parent.gameObject.GetComponent<DiceBlock>().AskForDirection(transform);
@@ -35,22 +37,38 @@ public class DiceBlock : MonoBehaviour {
     // Update is called once per frame
     void Update() {
         transform.Rotate(new Vector3(rotationSpeed * Time.deltaTime, rotationSpeed * Time.deltaTime, rotationSpeed * Time.deltaTime));
-        if (currentRoll == maxRoll) {
-            currentRoll = 1;
+        if (magic) {
+            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.D)) {
+                currentRoll += 1;
+                if (currentRoll > maxRoll) {
+                    currentRoll = 1;
+                }
+            } else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.A)) {
+                currentRoll -= 1;
+                if (currentRoll < 1) {
+                    currentRoll = maxRoll;
+                }
+            }
         } else {
-            if (!magic) {
+            if (currentRoll == maxRoll) {
+                currentRoll = 1;
+            } else {
                 currentRoll += 1;
             }
+        }
+        
+        if (debugRoll != 0) {
+            currentRoll = debugRoll;
         }
         rend.material = faces[currentRoll - 1];
 
         if (followers.Count > 0) {
-            degree += 1;
-            if (degree == 360 / followers.Count) {
-                degree = 0;
+            degree += 2;
+            if (degree >= 360 / followers.Count) {
+                degree = degree % (360 / followers.Count);
             }
             for (int f = 0; f < followers.Count; f++) {
-                followers[f].position = Quaternion.AngleAxis(degree + ((360 / followers.Count) * f), Vector3.up) * Vector3.forward * 1.5f;
+                followers[f].position = (Quaternion.AngleAxis(degree + ((360 / followers.Count) * f), Vector3.up) * Vector3.forward * 1.5f) + transform.position;
             }
         }
 
@@ -74,7 +92,7 @@ public class DiceBlock : MonoBehaviour {
 
     public void PassAlongRoll(int i) {
         if (leader) {
-            transform.parent.gameObject.GetComponent<Player>().SendRoll(currentRoll);
+            transform.parent.gameObject.GetComponent<Player>().SendRoll(i);
         }
     }
 }

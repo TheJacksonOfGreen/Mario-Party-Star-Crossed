@@ -61,34 +61,41 @@ public class PlayerTracker : MonoBehaviour {
         switch (tracking.getPlacing()) {
             case 1:
                 placingText.text = "1st";
+                placingColor.text = "1st";
                 placingColor.color = new Color(1.0f, 0.75f, 0.0f, 1.0f);
                 break;
             case 2:
                 placingText.text = "2nd";
+                placingColor.text = "2nd";
                 placingColor.color = new Color(0.75f, 0.75f, 0.75f, 1.0f);
                 break;
             case 3:
                 placingText.text = "3rd";
+                placingColor.text = "3rd";
                 placingColor.color = new Color(0.67f, 0.4f, 0.0f, 1.0f);
                 break;
             default:
                 placingText.text = "4th";
+                placingColor.text = "4th";
                 placingColor.color = new Color(0.67f, 0.44f, 1.0f, 1.0f);
                 break;
         }
         //TODO: Implement Avatar Pictures
         if (tracking.getItems().Count >= 1) {
             itemImg1.texture = items[(int) tracking.getItems()[0]];
+            itemImg1.gameObject.SetActive(true);
         } else {
             itemImg1.gameObject.SetActive(false);
         }
         if (tracking.getItems().Count >= 2) {
             itemImg2.texture = items[(int) tracking.getItems()[1]];
+            itemImg2.gameObject.SetActive(true);
         } else {
             itemImg2.gameObject.SetActive(false);
         }
         if (tracking.getItems().Count >= 3) {
             itemImg3.texture = items[(int) tracking.getItems()[2]];
+            itemImg3.gameObject.SetActive(true);
         } else {
             itemImg3.gameObject.SetActive(false);
         }

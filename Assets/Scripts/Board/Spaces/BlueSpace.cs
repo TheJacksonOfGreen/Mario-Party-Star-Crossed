@@ -17,7 +17,7 @@ public class BlueSpace : BoardSpace {
         Instantiate(coinPrefab, new Vector3(transform.position.x, transform.position.y + 5.0f, transform.position.z), Quaternion.Euler(0, Random.Range(0, 360), 0));
         yield return new WaitForSeconds(0.2f);
         Instantiate(coinPrefab, new Vector3(transform.position.x, transform.position.y + 5.0f, transform.position.z), Quaternion.Euler(0, Random.Range(0, 360), 0));
-        yield return new WaitForSeconds(0.4f);
+        yield return new WaitForSeconds(1.4f);
         p.state.changeCoins(3);
         doneLanding = true;
     }

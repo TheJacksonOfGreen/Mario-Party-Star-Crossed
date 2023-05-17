@@ -12,6 +12,8 @@ public class UIManager : MonoBehaviour {
     private GameObject coinCounter;
     private GameObject spacesLeft;
     private GameObject spinner;
+    private GameObject turnTracker;
+    private GameObject turnTrackerDrop;
 
     private GameObject optionA;
     private GameObject optionB;
@@ -26,6 +28,8 @@ public class UIManager : MonoBehaviour {
     private GameObject outcome5;
     private GameObject outcome6;
     private GameObject outcome7;
+    private GameObject spinnerTitle;
+    private GameObject spinnerTitleDrop;
 
     private BoardManager game;
     private PlayerTracker pt1;
@@ -60,6 +64,8 @@ public class UIManager : MonoBehaviour {
         coinCounter = transform.Find("Coin Counter").gameObject;
         spacesLeft = transform.Find("Spaces Left").gameObject;
         spinner = transform.Find("Spinner").gameObject;
+        turnTracker = standings.transform.Find("Turn").gameObject;
+        turnTrackerDrop = turnTracker.transform.Find("Drop").gameObject;
 
         optionA = options.transform.Find("Option A").gameObject;
         optionB = options.transform.Find("Option B").gameObject;
@@ -74,6 +80,8 @@ public class UIManager : MonoBehaviour {
         outcome5 = spinner.transform.Find("Panel (5)").gameObject;
         outcome6 = spinner.transform.Find("Panel (6)").gameObject;
         outcome7 = spinner.transform.Find("Panel (7)").gameObject;
+        spinnerTitle = spinner.transform.Find("Title").gameObject;
+        spinnerTitleDrop = spinnerTitle.transform.Find("Drop").gameObject;
 
         yourTurnColor = yourTurn.transform.Find("Drop").gameObject.GetComponent<Text>();
 
@@ -101,6 +109,9 @@ public class UIManager : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
+        turnTracker.GetComponent<Text>().text = game.state.getTurnText();
+        turnTrackerDrop.GetComponent<Text>().text = game.state.getTurnText();
+
         if (dialogueText.text != targetText) {
             charsShown += 1;
             dialogueText.text = targetText.Substring(0, charsShown);
@@ -193,7 +204,7 @@ public class UIManager : MonoBehaviour {
         this.targetText = targetText;
     }
 
-    public void Spinner(string title, List<string> options) {
+    public void Spinner(string title, Color titleColor, List<string> options) {
         outcome1.GetComponentsInChildren<Text>()[0].text = options[0];
         outcome2.GetComponentsInChildren<Text>()[0].text = options[1];
         outcome3.GetComponentsInChildren<Text>()[0].text = options[2];
@@ -201,10 +212,14 @@ public class UIManager : MonoBehaviour {
         outcome5.GetComponentsInChildren<Text>()[0].text = options[4];
         outcome6.GetComponentsInChildren<Text>()[0].text = options[5];
         outcome7.GetComponentsInChildren<Text>()[0].text = options[6];
+        spinnerTitle.GetComponent<Text>().text = title;
+        spinnerTitle.GetComponent<Text>().color = titleColor;
+        spinnerTitleDrop.GetComponent<Text>().text = title;
         mostRecentPrompt = "Spinner";
         spinnerChoices = options;
         spinnerLoc = Random.Range(1, 7);
         spinning = true;
+        windDown = -1;
         ToggleActivity(-1, -1, -1, -1, 0, -1, -1, 1);
     }
 
@@ -287,32 +302,22 @@ public class UIManager : MonoBehaviour {
     }
 
     public void OptionAClicked() {
-        if (charsShown >= targetText.Length) {
-            mostRecentAns = choices[0];
-        }
+        mostRecentAns = choices[0];
     }
 
     public void OptionBClicked() {
-        if (charsShown >= targetText.Length) {
-            mostRecentAns = choices[1];
-        }
+        mostRecentAns = choices[1];
     }
 
     public void OptionCClicked() {
-        if (charsShown >= targetText.Length) {
-            mostRecentAns = choices[2];
-        }
+        mostRecentAns = choices[2];
     }
 
     public void OptionDClicked() {
-        if (charsShown >= targetText.Length) {
-            mostRecentAns = choices[3];
-        }
+        mostRecentAns = choices[3];
     }
 
     public void OptionEClicked() {
-        if (charsShown >= targetText.Length) {
-            mostRecentAns = choices[4];
-        }
+        mostRecentAns = choices[4];
     }
 }

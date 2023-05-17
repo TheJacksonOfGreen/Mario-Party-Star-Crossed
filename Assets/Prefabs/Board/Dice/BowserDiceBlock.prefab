@@ -9733,6 +9733,7 @@ MonoBehaviour:
   - {fileID: 2199211711024465131}
   - {fileID: 2199211711300633750}
   magic: 0
+  debugRoll: 0
 --- !u!1 &2199211710789443214
 GameObject:
   m_ObjectHideFlags: 0
@@ -9761,7 +9762,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2199211710789443214}
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 11, y: 3, z: -15}
+  m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 6849481263006044011}
@@ -9862,6 +9863,7 @@ MonoBehaviour:
   - {fileID: 2199211711495398364}
   - {fileID: 2199211711735614529}
   magic: 0
+  debugRoll: 0
 --- !u!1 &2199211710804443415
 GameObject:
   m_ObjectHideFlags: 0
@@ -19595,6 +19597,7 @@ MonoBehaviour:
   - {fileID: 2199211711675375920}
   - {fileID: 2199211710804443416}
   magic: 0
+  debugRoll: 0
 --- !u!1 &2199211711024465126
 GameObject:
   m_ObjectHideFlags: 0
@@ -58152,6 +58155,7 @@ MonoBehaviour:
   - {fileID: 2199211711823209197}
   - {fileID: 2199211710241615621}
   magic: 0
+  debugRoll: 0
 --- !u!1 &2199211711654697183
 GameObject:
   m_ObjectHideFlags: 0
@@ -106317,6 +106321,7 @@ MonoBehaviour:
   - {fileID: 2199211711025964558}
   - {fileID: 2199211711942369179}
   magic: 0
+  debugRoll: 0
 --- !u!1 &6849481262433110312
 GameObject:
   m_ObjectHideFlags: 0

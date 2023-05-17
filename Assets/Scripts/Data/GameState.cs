@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameState {
+public class GameState : ScriptableObject {
     // GAME SETTINGS
     protected int maxTurn;
     protected int bonusStars;
@@ -128,6 +128,10 @@ public class GameState {
         } else {
             return 3;
         }
+    }
+
+    public string getTurnText() {
+        return ((this.turnsCompleted > 8) ? "Turn " : "Turn 0") + (this.turnsCompleted + 1) + "/" + this.maxTurn;
     }
 }
 

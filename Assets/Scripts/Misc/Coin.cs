@@ -9,7 +9,7 @@ public class Coin : MonoBehaviour {
         collectible = false;
     }
 
-    void OnCollisionEnter(Collision c) {
+    void OnTriggerEnter(Collider c) {
         if (c.gameObject.GetComponent<CoinCollector>() != null && this.collectible) {
             Destroy(this.GetComponent<Rigidbody>());
             foreach (MeshRenderer r in this.GetComponentsInChildren<MeshRenderer>()) {

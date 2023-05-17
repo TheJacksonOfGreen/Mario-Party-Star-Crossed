@@ -19,9 +19,9 @@ public abstract class BoardSpace : MonoBehaviour {
     void Start() {
         this.blueChance = 75;
         this.canLandHere = true;
-        this.setup();
         ui = FindObjectOfType<UIManager>();
         game = FindObjectOfType<BoardManager>();
+        this.setup();
         donePassing = true;
         doneLanding = true;
     }
@@ -106,10 +106,12 @@ public abstract class BoardSpace : MonoBehaviour {
             ui.Dialogue("You are carrying too many items. Pick one to throw out.", playerItems, false);
             yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
             string trash = ui.MostRecentDialogueAnswer();
+            yield return new WaitForSeconds(0.1f);
             BoardItem throwingOut = (BoardItem) ItemSpace.itemNames.IndexOf(trash);
             ui.Dialogue("You discarded " + trash + ".", playerItems, endOfChain);
             p.state.removeItem(throwingOut);
             yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+            yield return new WaitForSeconds(0.1f);
         }
     }
 }

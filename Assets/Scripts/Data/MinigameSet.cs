@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MinigameSet {
+public class MinigameSet : ScriptableObject {
     // 14 spots
     // 0-27
     protected List<int> mostRecentFFAs;

@@ -30,7 +30,7 @@ public class TestHappeningSpace : BoardSpace {
         Instantiate(coinPrefab, new Vector3(transform.position.x + ((float) Random.Range(1, 10) / 10.0f), transform.position.y + 5.0f, transform.position.z + ((float) Random.Range(1, 10) / 10.0f)), Quaternion.Euler(0, Random.Range(0, 360), 0));
         yield return new WaitForSeconds(0.1f);
         Instantiate(coinPrefab, new Vector3(transform.position.x + ((float) Random.Range(1, 10) / 10.0f), transform.position.y + 5.0f, transform.position.z + ((float) Random.Range(1, 10) / 10.0f)), Quaternion.Euler(0, Random.Range(0, 360), 0));
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(1.3f);
         p.state.changeCoins(10);
         doneLanding = true;
     }

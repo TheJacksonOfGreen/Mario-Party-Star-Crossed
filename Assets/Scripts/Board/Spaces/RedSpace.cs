@@ -21,7 +21,7 @@ public class RedSpace : BoardSpace {
             c.GetComponent<Coin>().MakeUncollectible();
             c.GetComponent<Rigidbody>().AddForce((c.transform.position - p.transform.position) + Vector3.up, ForceMode.Impulse);
         }
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(1.8f);
         p.state.changeCoins(-3);
         foreach (GameObject c in coins) {
             Destroy(c);

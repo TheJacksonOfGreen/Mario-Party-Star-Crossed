@@ -40,6 +40,13 @@ public class ItemSpace : BoardSpace {
     private List<BoardItem> tier4;
     private List<BoardItem> tier5;
 
+    private int[,,] odds = new int[4, 4, 5] {
+        {{10, 8, 2, 0, 0}, {9, 8, 3, 0, 0}, {8, 7, 4, 1, 0}, {8, 6, 4, 2, 0}},
+        {{10, 8, 2, 0, 0}, {8, 6, 3, 2, 1}, {6, 5, 4, 3, 2}, {4, 5, 5, 3, 3}},
+        {{9, 8, 2, 1, 0}, {8, 6, 3, 2, 1}, {4, 5, 5, 4, 3}, {2, 4, 4, 4, 6}},
+        {{8, 6, 4, 2, 0}, {6, 5, 4, 3, 2}, {2, 4, 4, 4, 6}, {1, 1, 4, 6, 8}}
+    };
+
     public override void setup() {
         this.canLandHere = false;
         tier5 = new List<BoardItem>() {
@@ -89,17 +96,33 @@ public class ItemSpace : BoardSpace {
     }
 
     public override IEnumerator pass(Player p) {
-        donePassing = false;
-        ui.MoveCounter(false);
-        BoardItem choice = CalcOdds(Random.Range(1, 20));
-        GetComponentsInChildren<AudioSource>()[0].Play();
-        yield return StartCoroutine(GivePlayerItem(p, choice, true));
+        if (game.state.getTurnStatus() != 4) {
+            donePassing = false;
+            ui.MoveCounter(false);
+            BoardItem choice = CalcOdds(Random.Range(1, 20), p.state.getPlacing(), game.state.getTurnStatus());
+            GetComponentsInChildren<AudioSource>()[0].Play();
+            yield return StartCoroutine(GivePlayerItem(p, choice, true));
+        }
         donePassing = true;
         ui.MoveCounter(true);
     }
 
-    private BoardItem CalcOdds(int i) {
-        //TODO: Implement
-        return BoardItem.Mushroom;
+    private BoardItem CalcOdds(int r, int p, int t) {
+        int i = 0;
+        while (r > odds[p-1, t, i]) {
+            r -= odds[p-1, t, i];
+            i += 1;
+        }
+        if (i == 4) {
+            return tier1[Random.Range(0, tier1.Count - 1)];
+        } else if (i == 3) {
+            return tier2[Random.Range(0, tier2.Count - 1)];
+        } else if (i == 2) {
+            return tier3[Random.Range(0, tier3.Count - 1)];
+        } else if (i == 1) {
+            return tier4[Random.Range(0, tier4.Count - 1)];
+        } else {
+            return tier5[Random.Range(0, tier5.Count - 1)];
+        }
     }
 }

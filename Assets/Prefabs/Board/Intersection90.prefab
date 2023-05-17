@@ -458,6 +458,8 @@ MonoBehaviour:
   inactiveMat: {fileID: 2100000, guid: 61e36c6249bd043f185566ef6e1d378a, type: 2}
   activeKey: 0
   inactiveKey: 0
+  gate: {fileID: 0}
+  optionGate: {fileID: 0}
 --- !u!1 &3447236853978662370
 GameObject:
   m_ObjectHideFlags: 0

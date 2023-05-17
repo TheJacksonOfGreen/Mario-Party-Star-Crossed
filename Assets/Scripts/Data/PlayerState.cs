@@ -60,7 +60,7 @@ public class PlayerState {
         } else {
             this.avatar = avatar;
         }
-        this.coins = 0;
+        this.coins = 20;
         this.stars = 0;
         this.items = new List<BoardItem>();
         this.space = 0;
@@ -163,6 +163,13 @@ public class PlayerState {
         }
     }
 
+    public BoardItem stealRandomItem() {
+        int index = Random.Range(0, this.items.Count - 1);
+        BoardItem bi = items[index];
+        this.removeItem(bi);
+        return bi;
+    }
+
     public bool hasItem(BoardItem i) {
         return this.items.Contains(i);
     }
@@ -201,8 +208,6 @@ public class PlayerState {
 
     public string charName() {
         switch (this.avatar) {
-            case 0:
-                return "Mario";
             case 1:
                 return "Luigi";
             case 2:
@@ -227,15 +232,15 @@ public class PlayerState {
                 return "Hammer Bro";
             case 12:
                 return "Birdo";
-            default:
+            case 13:
                 return "Tosta";
+            default:
+                return "Mario";
         }
     }
 
     public Color charColor() {
         switch (this.avatar) {
-            case 0:
-                return new Color(1.0f, 0.0f, 0.0f, 1.0f);
             case 1:
                 return new Color(0.0f, 0.8f, 0.0f, 1.0f);
             case 2:
@@ -260,8 +265,10 @@ public class PlayerState {
                 return new Color(0.0f, 0.4f, 0.0f, 1.0f);
             case 12:
                 return new Color(1.0f, 0.0f, 1.0f, 1.0f);
-            default:
+            case 13:
                 return new Color(0.6f, 0.6f, 0.0f, 1.0f);
+            default:
+                return new Color(1.0f, 0.0f, 0.0f, 1.0f);
         }
     }
 }

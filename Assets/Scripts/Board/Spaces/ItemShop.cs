@@ -176,18 +176,19 @@ public class ItemShop : BoardSpace {
                 }
                 List<string> choiceNames = new List<string>();
                 foreach (BoardItem bi in choices) {
-                    choiceNames.Add(ItemSpace.itemNames[(int) bi] + "(" + ItemShop.prices + ")");
+                    choiceNames.Add(ItemSpace.itemNames[(int) bi] + " (" + ItemShop.prices[(int) bi] + ")");
                 }
                 choiceNames.Add("Actually, I'm Good.");
                 ui.Dialogue("Welcome to the Item Shop! What would you like?", choiceNames, false);
                 yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
-                int i = choiceNames.IndexOf(ui.MostRecentDialogueAnswer());
+                int i = (choiceNames.Count - 1) - choiceNames.IndexOf(ui.MostRecentDialogueAnswer());
                 if (i == 4) {
                     ui.Dialogue("Item Shop Owner", "Alright, then. We hope to see you again soon!", true);
                     yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
                 } else {
                     p.state.changeCoins(-1 * ItemShop.prices[(int) choices[i]]);
                     yield return StartCoroutine(GivePlayerItem(p, choices[i], false));
+                    yield return new WaitForSeconds(0.1f);
                     ui.Dialogue("Item Shop Owner", "We hope to see you again soon!", true);
                     yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
                 }

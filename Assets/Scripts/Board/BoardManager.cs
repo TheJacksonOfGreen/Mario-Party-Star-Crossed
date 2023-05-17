@@ -12,11 +12,15 @@ public class BoardManager : MonoBehaviour {
     private int phase;
     private PlayerState[] players;
     private List<BoardSpace> registry;
+    private int maxID;
 
     void Awake() {
         state = new GameState(new PlayerState(0, 0), new PlayerState(0, 1), new PlayerState(0, 2), new PlayerState(0, 3), 10, 0, false, false, false, new List<int>() { 0, 0, 0, 0 }, new List<bool>() { false });
         registry = new List<BoardSpace>();
         foreach (BoardSpace space in GetComponentsInChildren<BoardSpace>()) {
+            if (space.id > maxID) {
+                maxID = space.id;
+            }
             if (space.id != -1) {
                 while (registry.Count <= space.id) {
                     registry.Add(null);
@@ -38,10 +42,10 @@ public class BoardManager : MonoBehaviour {
     // Update is called once per frame
     void Update() {
         foreach (PlayerState pA in players) {
-            pA.setPlacing(4);
+            pA.setPlacing(1);
             foreach (PlayerState pB in players) {
-                if (pA != pB && (pA.getStars() > pB.getStars() || (pA.getStars() == pB.getStars() && pA.getCoins() > pB.getCoins()))) {
-                    pA.setPlacing(pA.getPlacing() - 1);
+                if (pA != pB && (pB.getStars() > pA.getStars() || (pA.getStars() == pB.getStars() && pB.getCoins() > pA.getCoins()))) {
+                    pA.setPlacing(pA.getPlacing() + 1);
                 }
             }
         }
@@ -55,6 +59,7 @@ public class BoardManager : MonoBehaviour {
         // 6: P4 Pre-Roll
         // 7: P4 Post-Roll
         // 8: Minigame
+        // 9: End-of-turn reset
 
         switch (phase) {
             case 0:
@@ -91,8 +96,17 @@ public class BoardManager : MonoBehaviour {
             case 7:
                 if (p4.TurnOver()) {
                     phase = 8;
-                    // TODO: Implement Minigame Phase
                 }
+                break;
+            case 8:
+                // TODO: Implement Minigame Phase
+                phase = 9;
+                break;
+            case 9:
+                foreach (PlayerState ps in players) {
+                    ps.setTeam(0);
+                }
+                phase = 0;
                 break;
             default:
                 phase = 0;
@@ -102,5 +116,23 @@ public class BoardManager : MonoBehaviour {
 
     public BoardSpace GetSpaceFromID(int id) {
         return this.registry[id];
+    }
+
+    public BoardSpace GetRandomSpace() {
+        return this.registry[Random.Range(1, this.registry.Count - 1)];
+    }
+
+    public int MyPlayerNumber(Player p) {
+        if (p == p1) {
+            return 1;
+        } else if (p == p2) {
+            return 2;
+        } else if (p == p3) {
+            return 3;
+        } else if (p == p4) {
+            return 4;
+        } else {
+            return 0;
+        }
     }
 }
