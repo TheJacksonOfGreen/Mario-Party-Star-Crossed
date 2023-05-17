@@ -95,21 +95,23 @@ public abstract class BoardSpace : MonoBehaviour {
     }
 
     public IEnumerator GivePlayerItem(Player p, BoardItem i, bool endOfChain) {
-        p.state.addItem(i);
-        ui.Dialogue("You got a " + ItemSpace.itemNames[(int) i] + "!", (p.state.getItems().Count < 4) && endOfChain);
+        bool fullPockets = !p.state.addItem(i);
+        ui.Dialogue("You got a " + ItemSpace.itemNames[(int) i] + "!", !fullPockets && endOfChain);
         yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
-        if (p.state.getItems().Count >= 4) {
+        if (fullPockets) {
             List<string> playerItems = new List<string>();
             foreach (BoardItem b in p.state.getItems()) {
                 playerItems.Add(ItemSpace.itemNames[(int) b]);
             }
+            playerItems.Add(ItemSpace.itemNames[(int) i]);
             ui.Dialogue("You are carrying too many items. Pick one to throw out.", playerItems, false);
             yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
             string trash = ui.MostRecentDialogueAnswer();
             yield return new WaitForSeconds(0.1f);
             BoardItem throwingOut = (BoardItem) ItemSpace.itemNames.IndexOf(trash);
-            ui.Dialogue("You discarded " + trash + ".", playerItems, endOfChain);
+            ui.Dialogue("You discarded " + trash + ".", endOfChain);
             p.state.removeItem(throwingOut);
+            p.state.addItem(i);
             yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
             yield return new WaitForSeconds(0.1f);
         }
