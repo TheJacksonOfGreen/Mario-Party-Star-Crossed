@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StarSpace : BoardSpace {
+public class ClassicStarSpace : BoardSpace {
     public override IEnumerator pass(Player p) {
         this.canLandHere = false;
         donePassing = false;

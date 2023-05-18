@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ItemShop : BoardSpace {
-    public static List<int> prices = new List<int>() { 5, 12, 12, 3, 3, 7, 7, 5, 10, 20, 15, 15, 12, 15, 30, 20, 15, 15, 15 };
+    public static List<int> prices = new List<int>() { 5, 12, 12, 3, 3, 7, 7, 5, 10, 20, 15, 15, 12, 15, 30, 25, 15, 15, 15 };
 
     public bool booItemsAllowed = true;
     public bool chompCallAllowed = true;

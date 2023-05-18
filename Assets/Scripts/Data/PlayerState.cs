@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class PlayerState {
     // PLAYER CONFIG
     // 0: Local Human
@@ -10,13 +11,18 @@ public class PlayerState {
     // 3: Hard COM
     // 4: Master COM
     // 5: Remote Human
+    [SerializeField]
     private int controller;
 
     // VISIBLE PLAYER DATA
+    [SerializeField]
     private int coins;
+    [SerializeField]
     private int stars;
+    [SerializeField]
     private int avatar;
     // 0-<# of solid, non-start spaces on board>
+    [SerializeField]
     private int space;
     // 0: No Mushroom
     // 1: Mushroom
@@ -24,29 +30,46 @@ public class PlayerState {
     // 3: Magic Mushroom
     // 4: Poison Mushroom
     // 5: Bowser Suit
+    [SerializeField]
     private int shroom;
     // 3 spots
+    [SerializeField]
     private List<BoardItem> items;
+    [SerializeField]
     private int minigameTeam;
+    [SerializeField]
     private int externalPlacing;
 
     // INTERNAL PLAYER DATA
     // maxTurn Spots
+    [SerializeField]
     private List<int> coinTracking;
     // maxTurn Spots
+    [SerializeField]
     private List<int> starTracking;
+    [SerializeField]
     private int totalSpacesMoved;
+    [SerializeField]
     private int totalMinigameRewards;
+    [SerializeField]
     private int totalDuelsPlayed;
+    [SerializeField]
     private int totalUnluckySpaces;
+    [SerializeField]
     private int totalHappeningSpaces;
+    [SerializeField]
     private int totalItemsUsed;
 
     // AI MOTIVES
+    [SerializeField]
     private List<int> hiddenBlockCandidates;
+    [SerializeField]
     private int p1Grudge;
+    [SerializeField]
     private int p2Grudge;
+    [SerializeField]
     private int p3Grudge;
+    [SerializeField]
     private int p4Grudge;
 
     public PlayerState(int controller, int avatar) {

@@ -1,45 +1,71 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
-public class GameState : ScriptableObject {
+[System.Serializable]
+public class GameState {
     // GAME SETTINGS
+    [SerializeField]
     protected int maxTurn;
+    [SerializeField]
     protected int bonusStars;
+    [SerializeField]
     protected bool halfwayThere;
+    [SerializeField]
     protected bool hiddenBlocksPresent;
+    [SerializeField]
     protected bool consolationCoins;
+    [SerializeField]
     protected List<int> handicaps;
+    [SerializeField]
     protected List<bool> minigames;
 
     // VISIBLE GAME DATA
+    [SerializeField]
     protected int turnsCompleted;
 
     // INTERNAL GAME DATA
+    [SerializeField]
+    private string filename;
     // 0-27
+    [SerializeField]
     protected List<int> mostRecentFFAs;
     // 0-13
+    [SerializeField]
     protected List<int> mostRecent2v2s;
     // 0-11
+    [SerializeField]
     protected List<int> mostRecent1v3s;
     // 0-9
+    [SerializeField]
     protected List<int> mostRecentDuels;
     // 0-5
+    [SerializeField]
     protected List<int> mostRecentBattles;
     // floor(<# of solid, non-start spaces on board> / 20) spots
     // 1-<# of solid, non-start spaces on board>
     // Empty if turnsCompleted < 3, or if not hiddenBlocks
+    [SerializeField]
     protected List<int> hiddenBlocks;
+    [SerializeField]
     protected int chanceTimeCount;
     // Start at -1
+    [SerializeField]
     protected int mostRecentBattleMinigame;
+    [SerializeField]
     protected int battleChance;
+    [SerializeField]
     protected int suspendedForMG;
 
     // PLAYER STATES
+    [SerializeField]
     protected PlayerState p1;
+    [SerializeField]
     protected PlayerState p2;
+    [SerializeField]
     protected PlayerState p3;
+    [SerializeField]
     protected PlayerState p4;
 
     public GameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) {
@@ -133,44 +159,103 @@ public class GameState : ScriptableObject {
     public string getTurnText() {
         return ((this.turnsCompleted > 8) ? "Turn " : "Turn 0") + (this.turnsCompleted + 1) + "/" + this.maxTurn;
     }
-}
 
-public class FantasticFactoryGameState: GameState {
-    private int starLocation;
+    public int getTurnEvent() {
+        if (turnsCompleted == 0) {
+            return 1;
+        } else if (turnsCompleted == maxTurn / 2 && halfwayThere) {
+            return 2;
+        } else if (turnsCompleted == maxTurn - 5) {
+            return 3;
+        } else if (turnsCompleted == maxTurn) {
+            return 4;
+        } else {
+            return 0;
+        }
+    }
 
-    public FantasticFactoryGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames): base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
-        this.starLocation = Random.Range(0, 5);
+    public void turnCompleted() {
+        turnsCompleted += 1;
+    }
+
+    public string SaveGame() {
+        if (filename == null) {
+            int n = 0;
+            while (File.Exists("Assets/Data/savedgame_" + n)) {
+                n += 1;
+            }
+            filename = "savedgame_" + n;
+        }
+        File.WriteAllText("Assets/Data/" + filename, JsonUtility.ToJson(this));
+        return filename;
     }
 }
 
-public class SunshineShorelineGameState: GameState {
-    private int starLocation;
+[System.Serializable]
+public abstract class ClassicStarGameState: GameState {
+    protected int starLocation;
+
+    public ClassicStarGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) : base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
+        NewStarPos(new List<int>());
+    }
+
+    public void NewStarPos(List<int> blocked) {
+        List<int> possibleLocs = new List<int>(StarLocationIDs());
+        possibleLocs.RemoveAll(i => blocked.Contains(i));
+        starLocation = possibleLocs[Random.Range(0, possibleLocs.Count - 1)];
+    }
+
+    public abstract List<int> StarLocationIDs();
+}
+
+[System.Serializable]
+public class FantasticFactoryGameState: ClassicStarGameState {
+    public FantasticFactoryGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) : base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {}
+
+    public override List<int> StarLocationIDs() {
+        // TODO: Star Locations
+        return new List<int>() {0};
+    }
+}
+
+[System.Serializable]
+public class SunshineShorelineGameState: ClassicStarGameState {
     private bool westernSwapJunctionShortPath;
     private bool easternSwapJunctionShortPath;
 
-    public SunshineShorelineGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames): base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
-        this.starLocation = Random.Range(0, 5);
+    public SunshineShorelineGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) : base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
         this.westernSwapJunctionShortPath = true;
         this.easternSwapJunctionShortPath = true;
     }
-}
 
-public class MarvelousMetroGameState: GameState {
-    private int starLocation;
-    private int starPrice;
-    private int nabbitPos;
-
-    public MarvelousMetroGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames): base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
-        this.starLocation = Random.Range(0, 5);
-        this.starPrice = 10;
-        this.nabbitPos = -1;
+    public override List<int> StarLocationIDs() {
+        // TODO: Star Locations
+        return new List<int>() {0};
     }
 }
 
-public class NuttyNebulaGameState: GameState {
-    public NuttyNebulaGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames): base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {}
+[System.Serializable]
+public class MarvelousMetroGameState: ClassicStarGameState {
+    private int starPrice;
+    private int nabbitPos;
+
+    public MarvelousMetroGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) : base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
+        this.starPrice = 10;
+        this.nabbitPos = -1;
+    }
+
+    public override List<int> StarLocationIDs() {
+        // TODO: Star Locations
+        return new List<int>() {0};
+    }
 }
 
+[System.Serializable]
+public class NuttyNebulaGameState: GameState {
+    public NuttyNebulaGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) : base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {}
+}
+
+[System.Serializable]
 public class TreasureTempleGameState: GameState {
     private List<int> grandTempleInvestments;
     private List<int> northernTempleInvestments;
@@ -181,7 +266,7 @@ public class TreasureTempleGameState: GameState {
     private bool easternWhompBlocksInternal;
     private int ancientCountdown;
 
-    public TreasureTempleGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames): base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
+    public TreasureTempleGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) : base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
         this.grandTempleInvestments = new List<int> { 0, 0, 0, 0 };
         this.northernTempleInvestments = new List<int> { 0, 0, 0, 0 };
         this.centralTempleInvestments = new List<int> { 0, 0, 0, 0 };
@@ -193,20 +278,21 @@ public class TreasureTempleGameState: GameState {
     }
 }
 
+[System.Serializable]
 public class FlowerFestivalGameState: GameState {
     private int floatLocationA;
     private int floatLocationB;
     private int floatLocationC;
     private List<string> senbonbikiPool;
 
-    public FlowerFestivalGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames): base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
+    public FlowerFestivalGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) : base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
         // TODO: Float Location
         this.senbonbikiPool = new List<string>() { "None", "None", "None", "Dueling Glove", "Bowser Suit", "Magic Mushroom", "10 Coins", "Star" };
     }
 }
 
-public class TwistedTowersGameState: GameState {
-    private int starLocation;
+[System.Serializable]
+public class TwistedTowersGameState: ClassicStarGameState {
     private int graveyardPortraitTarget;
     private int startingPortraitTarget;
     private int midlevelPortraitTarget;
@@ -221,8 +307,7 @@ public class TwistedTowersGameState: GameState {
     private static List<int> magicSpaceOdds = new List<int>() {0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5};
     private int magicSpaces;
 
-    public TwistedTowersGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames): base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
-        this.starLocation = Random.Range(0, 5);
+    public TwistedTowersGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) : base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
         this.magicSpaces = -1;
         this.shufflePortraits();
         this.randomizeMagicSpaces();
@@ -298,26 +383,34 @@ public class TwistedTowersGameState: GameState {
             this.kamekPortraitTarget = locsAvailable[locsAvailable.Count - 1];
         }
     }
+
+    public override List<int> StarLocationIDs() {
+        // TODO: Star Locations
+        return new List<int>() {0};
+    }
 }
 
+[System.Serializable]
 public class CalamitousCliffsGameState: GameState {
     private bool starAvailable;
 
-    public CalamitousCliffsGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames): base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
+    public CalamitousCliffsGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) : base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
         this.starAvailable = true;
     }
 }
 
-public class FutureDreamGameState: GameState {
-    private int starLocation;
+[System.Serializable]
+public class FutureDreamGameState: ClassicStarGameState {
+    public FutureDreamGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) : base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {}
 
-    public FutureDreamGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames): base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
-        this.starLocation = Random.Range(0, 5);
+    public override List<int> StarLocationIDs() {
+        // TODO: Star Locations
+        return new List<int>() {0};
     }
 }
 
-public class CreepyCavernGameState: GameState {
-    private int starLocation;
+[System.Serializable]
+public class CreepyCavernGameState: ClassicStarGameState {
     private bool whompKingBlocksEast;
     // 0: Mushroom
     // 1: Poison Mushroom
@@ -325,21 +418,28 @@ public class CreepyCavernGameState: GameState {
     // 3: Skeleton Key
     private int kingDesire;
 
-    public CreepyCavernGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames): base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
-        this.starLocation = Random.Range(0, 5);
+    public CreepyCavernGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) : base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
         this.whompKingBlocksEast = true;
         this.kingDesire = Random.Range(0, 3);
     }
+
+    public override List<int> StarLocationIDs() {
+        // TODO: Star Locations
+        return new List<int>() {0};
+    }
 }
 
+[System.Serializable]
 public class SnowflakeLakeGameState: GameState {
-    public SnowflakeLakeGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames): base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {}
+    public SnowflakeLakeGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) : base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {}
 }
 
-public class GreedyGalaGameState: GameState {
-    private int starLocation;
+[System.Serializable]
+public class GreedyGalaGameState: ClassicStarGameState {
+    public GreedyGalaGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames) : base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {}
 
-    public GreedyGalaGameState(PlayerState p1, PlayerState p2, PlayerState p3, PlayerState p4, int maxTurn, int bonusStars, bool halfwayThere, bool hiddenBlocksPresent, bool consolationCoins, List<int> handicaps, List<bool> minigames): base(p1, p2, p3, p4, maxTurn, bonusStars, halfwayThere, hiddenBlocksPresent, consolationCoins, handicaps, minigames) {
-        this.starLocation = Random.Range(0, 5);
+    public override List<int> StarLocationIDs() {
+        // TODO: Star Locations
+        return new List<int>() {0};
     }
 }

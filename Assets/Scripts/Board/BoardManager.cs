@@ -1,9 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class BoardManager : MonoBehaviour {
+    [HideInInspector]
     public GameState state;
+    public string fileToLoad;
     public Player p1;
     public Player p2;
     public Player p3;
@@ -15,7 +18,12 @@ public class BoardManager : MonoBehaviour {
     private int maxID;
 
     void Awake() {
-        state = new GameState(new PlayerState(0, 0), new PlayerState(0, 1), new PlayerState(0, 2), new PlayerState(0, 3), 10, 0, false, false, false, new List<int>() { 0, 0, 0, 0 }, new List<bool>() { false });
+        if (fileToLoad != "" && File.Exists("Assets/Data/" + fileToLoad)) {
+            state = JsonUtility.FromJson<GameState>(File.ReadAllText("Assets/Data/" + fileToLoad));
+        } else {
+            state = new GameState(new PlayerState(0, 0), new PlayerState(0, 1), new PlayerState(0, 2), new PlayerState(0, 3), 10, 0, false, false, false, new List<int>() { 0, 0, 0, 0 }, new List<bool>() { false });
+            fileToLoad = state.SaveGame();
+        }
         registry = new List<BoardSpace>();
         foreach (BoardSpace space in GetComponentsInChildren<BoardSpace>()) {
             if (space.id > maxID) {
@@ -50,62 +58,84 @@ public class BoardManager : MonoBehaviour {
             }
         }
 
-        // 0: P1 Pre-Roll
-        // 1: P1 Post-Roll
-        // 2: P2 Pre-Roll
-        // 3: P2 Post-Roll
-        // 4: P3 Pre-Roll
-        // 5: P3 Post-Roll
-        // 6: P4 Pre-Roll
-        // 7: P4 Post-Roll
-        // 8: Minigame
-        // 9: End-of-turn reset
+        // 0: Start-Of-Turn Event (Opening Ceremony, Halfway There, Last Five Turns)
+        // 1: P1 Pre-Roll
+        // 2: P1 Post-Roll
+        // 3: P2 Pre-Roll
+        // 4: P2 Post-Roll
+        // 5: P3 Pre-Roll
+        // 6: P3 Post-Roll
+        // 7: P4 Pre-Roll
+        // 8: P4 Post-Roll
+        // 9: Minigame
+        // 10: End-of-turn reset, save
 
         switch (phase) {
             case 0:
-                p1.StartTurn();
+                switch (state.getTurnEvent()) {
+                    case 1:
+                        // TODO: Opening Ceremony
+                        break;
+                    case 2:
+                        // TODO: Halfway There
+                        break;
+                    case 3:
+                        // TODO: Last Five Turns
+                        break;
+                    case 4:
+                        // TODO: Closing Ceremony
+                        break;
+                    default:
+                        break;
+                }
                 phase = 1;
                 break;
             case 1:
-                if (p1.TurnOver()) {
-                    phase = 2;
-                }
+                p1.StartTurn();
+                phase = 2;
                 break;
             case 2:
-                p2.StartTurn();
-                phase = 3;
+                if (p1.TurnOver()) {
+                    phase = 3;
+                }
                 break;
             case 3:
-                if (p2.TurnOver()) {
-                    phase = 4;
-                }
+                p2.StartTurn();
+                phase = 4;
                 break;
             case 4:
-                p3.StartTurn();
-                phase = 5;
+                if (p2.TurnOver()) {
+                    phase = 5;
+                }
                 break;
             case 5:
-                if (p3.TurnOver()) {
-                    phase = 6;
-                }
+                p3.StartTurn();
+                phase = 6;
                 break;
             case 6:
-                p4.StartTurn();
-                phase = 7;
-                break;
-            case 7:
-                if (p4.TurnOver()) {
-                    phase = 8;
+                if (p3.TurnOver()) {
+                    phase = 7;
                 }
                 break;
+            case 7:
+                p4.StartTurn();
+                phase = 8;
+                break;
             case 8:
-                // TODO: Implement Minigame Phase
-                phase = 9;
+                if (p4.TurnOver()) {
+                    phase = 9;
+                }
                 break;
             case 9:
+                // TODO: Implement Minigame Phase
+                phase = 10;
+                break;
+            case 10:
                 foreach (PlayerState ps in players) {
                     ps.setTeam(0);
                 }
+                state.turnCompleted();
+                state.SaveGame();
                 phase = 0;
                 break;
             default:

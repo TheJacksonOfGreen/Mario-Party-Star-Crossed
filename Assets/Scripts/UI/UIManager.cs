@@ -9,7 +9,7 @@ public class UIManager : MonoBehaviour {
     private GameObject yourTurn;
     private GameObject options;
     private GameObject standings;
-    private GameObject coinCounter;
+    private GameObject counter;
     private GameObject spacesLeft;
     private GameObject spinner;
     private GameObject turnTracker;
@@ -51,6 +51,9 @@ public class UIManager : MonoBehaviour {
     private int spinnerFrame;
     private Text yourTurnColor;
     private string mostRecentPrompt;
+    private int counterMin;
+    private int counterMax;
+    private int counterStatus;
 
     // Start is called before the first frame update
     void Start() {
@@ -61,7 +64,7 @@ public class UIManager : MonoBehaviour {
         yourTurn = transform.Find("Your Turn").gameObject;
         options = transform.Find("Options").gameObject;
         standings = transform.Find("Standings").gameObject;
-        coinCounter = transform.Find("Coin Counter").gameObject;
+        counter = transform.Find("Counter").gameObject;
         spacesLeft = transform.Find("Spaces Left").gameObject;
         spinner = transform.Find("Spinner").gameObject;
         turnTracker = standings.transform.Find("Turn").gameObject;
@@ -146,6 +149,10 @@ public class UIManager : MonoBehaviour {
             }
         }
 
+        if (mostRecentPrompt == "Counter") {
+            mostRecentAns = "" + counterStatus;
+        }
+
         outcome1.GetComponent<Image>().color = new Color(1.0f, 1.0f, 1.0f, spinnerLoc == 1 ? 1.0f : 0.5f);
         outcome2.GetComponent<Image>().color = new Color(1.0f, 1.0f, 1.0f, spinnerLoc == 2 ? 1.0f : 0.5f);
         outcome3.GetComponent<Image>().color = new Color(1.0f, 1.0f, 1.0f, spinnerLoc == 3 ? 1.0f : 0.5f);
@@ -223,12 +230,34 @@ public class UIManager : MonoBehaviour {
         ToggleActivity(-1, -1, -1, -1, 0, -1, -1, 1);
     }
 
+    public void Counter(int min, int max, bool countStars) {
+        counterMin = min;
+        counterMax = max;
+        counterStatus = counterMin;
+        ToggleActivity(0, -1, -1, -1, 0, 1, -1, -1);
+        mostRecentPrompt = "Counter";
+    }
+
+    public void IncrementCounter() {
+        counterStatus += 1;
+        if (counterStatus > counterMax) {
+            counterStatus = counterMax;
+        }
+    }
+
+    public void DecrementCounter() {
+        counterStatus -= 1;
+        if (counterStatus < counterMin) {
+            counterStatus = counterMin;
+        }
+    }
+
     private void ToggleActivity(int d, int c, int y, int o, int s, int cc, int sl, int sp) {
         dialogue.SetActive(d == 0 ? dialogue.activeInHierarchy : d > 0);
         character.SetActive(c == 0 ? character.activeInHierarchy : c > 0);
         yourTurn.SetActive(y == 0 ? yourTurn.activeInHierarchy : y > 0);
         options.SetActive(o == 0 ? options.activeInHierarchy : o > 0);
-        coinCounter.SetActive(cc == 0 ? coinCounter.activeInHierarchy : cc > 0);
+        counter.SetActive(cc == 0 ? counter.activeInHierarchy : cc > 0);
         spacesLeft.SetActive(sl == 0 ? spacesLeft.activeInHierarchy : sl > 0);
         spinner.SetActive(sp == 0 ? spinner.activeInHierarchy : sp > 0);
         if (s > 0 && standings.transform.position.y == 200) {
