@@ -197,4 +197,8 @@ public class ItemShop : BoardSpace {
         donePassing = true;
         ui.MoveCounter(true);
     }
+
+    public override int AIValue(PlayerState state, List<PlayerState> rivals) {
+        return 10;
+    }
 }

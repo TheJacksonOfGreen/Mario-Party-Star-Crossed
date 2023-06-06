@@ -21,7 +21,7 @@ public class BoardManager : MonoBehaviour {
         if (fileToLoad != "" && File.Exists("Assets/Data/" + fileToLoad)) {
             state = JsonUtility.FromJson<GameState>(File.ReadAllText("Assets/Data/" + fileToLoad));
         } else {
-            state = new GameState(new PlayerState(0, 0), new PlayerState(0, 1), new PlayerState(0, 2), new PlayerState(0, 3), 10, 0, false, false, false, new List<int>() { 0, 0, 0, 0 }, new List<bool>() { false });
+            state = new GameState(new PlayerState(0, 0), new PlayerState(1, 1), new PlayerState(1, 2), new PlayerState(1, 3), 10, 0, false, false, false, new List<int>() { 0, 0, 0, 0 }, new List<bool>() { false });
             fileToLoad = state.SaveGame();
         }
         registry = new List<BoardSpace>();
@@ -58,7 +58,7 @@ public class BoardManager : MonoBehaviour {
             }
         }
 
-        // 0: Start-Of-Turn Event (Opening Ceremony, Halfway There, Last Five Turns)
+        // 0: Start-Of-Turn Event (Opening Ceremony, Halfway There, Last Five Turns, Closing Ceremony)
         // 1: P1 Pre-Roll
         // 2: P1 Post-Roll
         // 3: P2 Pre-Roll
@@ -164,5 +164,23 @@ public class BoardManager : MonoBehaviour {
         } else {
             return 0;
         }
+    }
+
+    public int MyPlayerNumber(PlayerState p) {
+        if (p == p1.state) {
+            return 1;
+        } else if (p == p2.state) {
+            return 2;
+        } else if (p == p3.state) {
+            return 3;
+        } else if (p == p4.state) {
+            return 4;
+        } else {
+            return 0;
+        }
+    }
+
+    public List<Player> GetPlayers() {
+        return new List<Player>() { p1, p2, p3, p4 };
     }
 }

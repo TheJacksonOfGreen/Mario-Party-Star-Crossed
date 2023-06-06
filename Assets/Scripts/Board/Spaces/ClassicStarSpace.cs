@@ -30,4 +30,18 @@ public class ClassicStarSpace : BoardSpace {
         donePassing = true;
         ui.MoveCounter(true);
     }
+
+    public override int SpacesToStar(bool withKey) {
+        return 0;
+    }
+
+    public override int AIValue(PlayerState state, List<PlayerState> rivals) {
+        if (state.hasItem(BoardItem.DoubleStarCard) && state.getCoins() >= 40) {
+            return 40;
+        } else if (state.getCoins() >= 20) {
+            return 20;
+        } else {
+            return -5;
+        }
+    }
 }

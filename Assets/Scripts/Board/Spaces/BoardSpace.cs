@@ -116,4 +116,47 @@ public abstract class BoardSpace : MonoBehaviour {
             yield return new WaitForSeconds(0.1f);
         }
     }
+
+    public virtual int SpacesToStar(bool withKey) {
+        return next.SpacesToStar(withKey) + (this.canLandHere ? 1 : 0);
+    }
+
+    public virtual int PlayersInRange(int range) {
+        int playersHere = 0;
+        if (id == game.p1.state.getSpaceID()) {
+            playersHere += 1;
+        }
+        if (id == game.p2.state.getSpaceID()) {
+            playersHere += 1;
+        } 
+        if (id == game.p3.state.getSpaceID()) {
+            playersHere += 1;
+        }
+        if (id == game.p4.state.getSpaceID()) {
+            playersHere += 1;
+        }
+        if (range == 0 && this.canLandHere) {
+            return playersHere;
+        } else {
+            return next.PlayersInRange(range - (this.canLandHere ? 1 : 0)) + playersHere;
+        }
+    }
+
+    public abstract int AIValue(PlayerState state, List<PlayerState> rivals);
+
+    public virtual int CumulativeValue(PlayerState state, List<PlayerState> rivals, int roll) {
+        if (canLandHere) {
+            if (roll == 0) {
+                return AIValue(state, rivals) - (state.getCoins() >= 20 ? SpacesToStar(state.getItems().Contains(BoardItem.SkeletonKey)) : 0);
+            } else {
+                return next.CumulativeValue(state, rivals, roll - 1);
+            }
+        } else {
+            return AIValue(state, rivals) + next.CumulativeValue(state, rivals, roll);
+        }
+    }
+
+    public bool CanLandHere() {
+        return canLandHere;
+    }
 }

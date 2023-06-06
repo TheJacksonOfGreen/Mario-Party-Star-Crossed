@@ -54,10 +54,14 @@ public class UIManager : MonoBehaviour {
     private int counterMin;
     private int counterMax;
     private int counterStatus;
+    private int controller;
+    private float comTime;
+    private AIBrain decisionAI;
 
     // Start is called before the first frame update
     void Start() {
         game = FindObjectOfType<BoardManager>();
+        comTime = 0.0f;
 
         dialogue = transform.Find("Dialogue").gameObject;
         character = transform.Find("Character").gameObject;
@@ -105,13 +109,15 @@ public class UIManager : MonoBehaviour {
         dialogueText.text = "";
 
         spinning = false;
-        windDown = -1;
+        windDown = -100;
         spinnerFrame = 0;
         targetText = "";
     }
 
     // Update is called once per frame
     void Update() {
+        comTime += Time.deltaTime;
+
         turnTracker.GetComponent<Text>().text = game.state.getTurnText();
         turnTrackerDrop.GetComponent<Text>().text = game.state.getTurnText();
 
@@ -133,9 +139,9 @@ public class UIManager : MonoBehaviour {
                 if (spinnerLoc > 7) {
                     spinnerLoc = 1;
                 }
-                if (Input.GetKeyDown(KeyCode.Space) && windDown < 0) {
+                if (Input.GetKeyDown(KeyCode.Space) && windDown < -50) {
                     windDown = Random.Range(6, 9);
-                } else if (windDown == 0) {
+                } else if (windDown <= 0 && mostRecentPrompt == "Spinner") {
                     spinning = false;
                     mostRecentAns = spinnerChoices[spinnerLoc - 1];
                 }
@@ -163,6 +169,7 @@ public class UIManager : MonoBehaviour {
     }
 
     public void YourTurn(string character, Color color) {
+        comTime = 0.0f;
         yourTurn.GetComponent<Text>().text = "Go, " + character + "!";
         mostRecentPrompt = "Splash Screen";
         yourTurnColor.color = color;
@@ -170,6 +177,7 @@ public class UIManager : MonoBehaviour {
     }
 
     public void Dialogue(string targetText, bool endOfChain) {
+        comTime = 0.0f;
         charsShown = 0;
         this.endOfChain = endOfChain;
         mostRecentPrompt = "Dialogue";
@@ -178,6 +186,7 @@ public class UIManager : MonoBehaviour {
     }
 
     public void Dialogue(string speaker, string targetText, bool endOfChain) {
+        comTime = 0.0f;
         charsShown = 0;
         this.endOfChain = endOfChain;
         speakerText.text = speaker;
@@ -187,6 +196,7 @@ public class UIManager : MonoBehaviour {
     }
 
     public void Dialogue(string targetText, List<string> choices, bool endOfChain) {
+        comTime = 0.0f;
         charsShown = 0;
         this.endOfChain = endOfChain;
         this.mostRecentAns = "";
@@ -199,6 +209,7 @@ public class UIManager : MonoBehaviour {
     }
 
     public void Dialogue(string speaker, string targetText, List<string> choices, bool endOfChain) {
+        comTime = 0.0f;
         charsShown = 0;
         this.endOfChain = endOfChain;
         speakerText.text = speaker;
@@ -212,6 +223,7 @@ public class UIManager : MonoBehaviour {
     }
 
     public void Spinner(string title, Color titleColor, List<string> options) {
+        comTime = 0.0f;
         outcome1.GetComponentsInChildren<Text>()[0].text = options[0];
         outcome2.GetComponentsInChildren<Text>()[0].text = options[1];
         outcome3.GetComponentsInChildren<Text>()[0].text = options[2];
@@ -226,7 +238,7 @@ public class UIManager : MonoBehaviour {
         spinnerChoices = options;
         spinnerLoc = Random.Range(1, 7);
         spinning = true;
-        windDown = -1;
+        windDown = -100;
         ToggleActivity(-1, -1, -1, -1, 0, -1, -1, 1);
     }
 
@@ -317,17 +329,43 @@ public class UIManager : MonoBehaviour {
     }
 
     public bool WaitForDialogueAnswer() {
-        if (mostRecentPrompt == "Spinner") {
-            return !spinning;
-        } else if (mostRecentPrompt == "Options") {
-            return mostRecentAns != "";
+        if (controller == 0) {
+            if (mostRecentPrompt == "Spinner") {
+                return !spinning;
+            } else if (mostRecentPrompt == "Options") {
+                return mostRecentAns != "";
+            } else {
+                return Input.GetKeyDown(KeyCode.Space);
+            }
+        } else if (controller == 5) {
+            // REMOTE PLAYER
+            return false;
         } else {
-            return Input.GetKeyDown(KeyCode.Space);
+            if (comTime >= 1.0f) {
+                if (mostRecentPrompt == "Spinner") {
+                    spinnerLoc = Random.Range(1, 7);
+                    mostRecentAns = spinnerChoices[spinnerLoc];
+                    spinning = false;
+                }
+                if (mostRecentPrompt == "Options") {
+                    mostRecentAns = decisionAI.Prompt(targetText, choices, 0);
+                }
+                return true;
+            }
+            return false;
         }
     }
 
     public string MostRecentDialogueAnswer() {
         return mostRecentAns;
+    }
+
+    public void SetController(int c) {
+        this.controller = c;
+    }
+
+    public void SetDecisionAI(AIBrain aib) {
+        this.decisionAI = aib;
     }
 
     public void OptionAClicked() {

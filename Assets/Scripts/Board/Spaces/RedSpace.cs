@@ -26,6 +26,11 @@ public class RedSpace : BoardSpace {
         foreach (GameObject c in coins) {
             Destroy(c);
         }
+        p.state.UnluckySpaceStatTrigger();
         doneLanding = true;
+    }
+
+    public override int AIValue(PlayerState state, List<PlayerState> rivals) {
+        return -3;
     }
 }

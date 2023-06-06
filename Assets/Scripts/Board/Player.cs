@@ -7,11 +7,11 @@ public class Player : MonoBehaviour {
     private BoardSpace targetSpace;
     private int rollCount;
     private UIManager ui;
-    private int turnPhase;
     private List<int> rolls;
     private bool usedItem;
     private Camera myCam;
     private bool takingTurn;
+    public AIBrain brain;
 
     [Tooltip("Movement Speed of Player.")]
     public float moveSpeed = 1.0f;
@@ -24,9 +24,15 @@ public class Player : MonoBehaviour {
     void Start() {
         ui = FindObjectOfType<UIManager>();
         game = FindObjectOfType<BoardManager>();
-        this.turnPhase = 0;
         myCam = GetComponentsInChildren<Camera>()[0];
         myCam.enabled = false;
+        List<PlayerState> rivals = new List<PlayerState>() { game.p1.state, game.p2.state, game.p3.state, game.p4.state };
+        rivals.Remove(state);
+        if (state.getController() == 0) {
+            brain = new PlayerBrain(state, rivals[0], rivals[1], rivals[2], game);
+        } else {
+            brain = new EasyBrain(state, rivals[0], rivals[1], rivals[2], game);
+        }
     }
 
     // Update is called once per frame
@@ -35,6 +41,8 @@ public class Player : MonoBehaviour {
     }
 
     public IEnumerator TakeTurn() {
+        ui.SetController(state.getController());
+        ui.SetDecisionAI(brain);
         myCam.enabled = true;
         ui.YourTurn(state.charName(), state.charColor());
         usedItem = false;
@@ -121,18 +129,22 @@ public class Player : MonoBehaviour {
                                 case 1:
                                     setNextSpace(game.GetSpaceFromID(game.p1.state.getSpaceID()), true);
                                     game.p1.setNextSpace(game.GetSpaceFromID(temp), true);
+                                    state.removeItem(BoardItem.WarpPipe);
                                     break;
                                 case 2:
                                     setNextSpace(game.GetSpaceFromID(game.p2.state.getSpaceID()), true);
                                     game.p2.setNextSpace(game.GetSpaceFromID(temp), true);
+                                    state.removeItem(BoardItem.WarpPipe);
                                     break;
                                 case 3:
                                     setNextSpace(game.GetSpaceFromID(game.p3.state.getSpaceID()), true);
                                     game.p3.setNextSpace(game.GetSpaceFromID(temp), true);
+                                    state.removeItem(BoardItem.WarpPipe);
                                     break;
                                 case 4:
                                     setNextSpace(game.GetSpaceFromID(game.p4.state.getSpaceID()), true);
                                     game.p4.setNextSpace(game.GetSpaceFromID(temp), true);
+                                    state.removeItem(BoardItem.WarpPipe);
                                     break;
                                 default:
                                     usedItem = false;
@@ -209,9 +221,196 @@ public class Player : MonoBehaviour {
                             yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
                             usedItem = false;
                             break;
+                        case "Boo Bell":
+                            state.removeItem(BoardItem.BooBell);
+                            ui.Dialogue("Boo", "Eeeeeheeheehee! I just love causing trouble! I think I'll go steal a little something from one of your rivals!", false);
+                            yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                            yield return new WaitForSeconds(0.1f);
+                            bool stealingStars = false;
+                            List<string> coinTheftChoices = new List<string>();
+                            if (game.p1.state.getCoins() > 0 && game.MyPlayerNumber(this) != 1) {
+                                coinTheftChoices.Add(game.p1.state.charName());
+                            }
+                            if (game.p2.state.getCoins() > 0 && game.MyPlayerNumber(this) != 2) {
+                                coinTheftChoices.Add(game.p2.state.charName());
+                            }
+                            if (game.p3.state.getCoins() > 0 && game.MyPlayerNumber(this) != 3) {
+                                coinTheftChoices.Add(game.p3.state.charName());
+                            }
+                            if (game.p4.state.getCoins() > 0 && game.MyPlayerNumber(this) != 4) {
+                                coinTheftChoices.Add(game.p4.state.charName());
+                            }
+                            List<string> starTheftChoices = new List<string>();
+                            if (game.p1.state.getStars() > 0 && game.MyPlayerNumber(this) != 1) {
+                                coinTheftChoices.Add(game.p1.state.charName());
+                            }
+                            if (game.p2.state.getStars() > 0 && game.MyPlayerNumber(this) != 2) {
+                                coinTheftChoices.Add(game.p2.state.charName());
+                            }
+                            if (game.p3.state.getStars() > 0 && game.MyPlayerNumber(this) != 3) {
+                                coinTheftChoices.Add(game.p3.state.charName());
+                            }
+                            if (game.p4.state.getStars() > 0 && game.MyPlayerNumber(this) != 4) {
+                                coinTheftChoices.Add(game.p4.state.charName());
+                            }
+                            if (state.getCoins() >= 40 && starTheftChoices.Count > 0) {
+                                ui.Dialogue("Boo", "I'll steal Coins for free, but Stars will cost you 40 Coins!", new List<string>() {"I want Coins!", "I want Stars!", "No, Stealing is Wrong!"}, false);
+                                yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                yield return new WaitForSeconds(0.1f);
+                                if (ui.MostRecentDialogueAnswer() == "I want Stars!") {
+                                    stealingStars = true;
+                                }
+                                if (ui.MostRecentDialogueAnswer() != "No, Stealing is Wrong!") {
+                                    if (stealingStars) {
+                                        ui.Dialogue("Boo", "Alright, alright! Who should I take them from?", starTheftChoices, false);
+                                    } else {
+                                        ui.Dialogue("Boo", "Alright, alright! Who should I take them from?", coinTheftChoices, false);
+                                    }
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                }
+                            } else if (coinTheftChoices.Count > 0) {
+                                coinTheftChoices.Add("No, Stealing is Wrong!");
+                                ui.Dialogue("Boo", "Whose Coins do you want me to take?", coinTheftChoices, false);
+                                yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                yield return new WaitForSeconds(0.1f);
+                            } else {
+                                ui.Dialogue("Boo", "Well...I would if anyone had anything good to steal.", false);
+                                yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                yield return new WaitForSeconds(0.1f);
+                            }
+                            if (ui.MostRecentDialogueAnswer() == game.p1.state.charName()) {
+                                ui.Dialogue("Boo", "Alright! Here I go!", false);
+                                yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                yield return new WaitForSeconds(0.1f);
+                                if (game.p1.state.hasItem(BoardItem.Gaddlight)) {
+                                    game.p1.state.removeItem(BoardItem.Gaddlight);
+                                    ui.Dialogue("Boo", "Ugh! You didn't mention they had a Gaddlight! I'm outta here!", true);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                } else if (stealingStars) {
+                                    state.changeCoins(-40);
+                                    state.changeStars(1);
+                                    game.p1.state.changeStars(-1);
+                                    ui.Dialogue("Boo", "Oh, aren't I simply devilish? I just stole you a Star!", false);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                    ui.Dialogue("Boo", "Ueeheeheeheehee! Come back real soon!", true);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                } else {
+                                    int coinsToSteal = Random.Range(game.p1.state.getCoins() / 4, 20);
+                                    state.changeCoins(coinsToSteal);
+                                    game.p1.state.changeCoins(-1 * coinsToSteal);
+                                    ui.Dialogue("Boo", "How do you like that? I just stole you " + coinsToSteal + " Coins!", false);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                    ui.Dialogue("Boo", "Ueeheeheeheehee! Come back real soon!", true);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                }
+                            } else if (ui.MostRecentDialogueAnswer() == game.p2.state.charName()) {
+                                ui.Dialogue("Boo", "Alright! Here I go!", false);
+                                yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                yield return new WaitForSeconds(0.1f);
+                                if (game.p2.state.hasItem(BoardItem.Gaddlight)) {
+                                    game.p2.state.removeItem(BoardItem.Gaddlight);
+                                    ui.Dialogue("Boo", "Ugh! You didn't mention they had a Gaddlight! I'm outta here!", true);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                } else if (stealingStars) {
+                                    state.changeCoins(-40);
+                                    state.changeStars(1);
+                                    game.p2.state.changeStars(-1);
+                                    ui.Dialogue("Boo", "Oh, aren't I simply devilish? I just stole you a Star!", false);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                    ui.Dialogue("Boo", "Ueeheeheeheehee! Come back real soon!", true);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                } else {
+                                    int coinsToSteal = Random.Range(game.p2.state.getCoins() / 4, 20);
+                                    state.changeCoins(coinsToSteal);
+                                    game.p2.state.changeCoins(-1 * coinsToSteal);
+                                    ui.Dialogue("Boo", "How do you like that? I just stole you " + coinsToSteal + " Coins!", false);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                    ui.Dialogue("Boo", "Ueeheeheeheehee! Come back real soon!", true);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                }
+                            } else if (ui.MostRecentDialogueAnswer() == game.p3.state.charName()) {
+                                ui.Dialogue("Boo", "Alright! Here I go!", false);
+                                yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                yield return new WaitForSeconds(0.1f);
+                                if (game.p3.state.hasItem(BoardItem.Gaddlight)) {
+                                    game.p3.state.removeItem(BoardItem.Gaddlight);
+                                    ui.Dialogue("Boo", "Ugh! You didn't mention they had a Gaddlight! I'm outta here!", true);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                } else if (stealingStars) {
+                                    state.changeCoins(-40);
+                                    state.changeStars(1);
+                                    game.p3.state.changeStars(-1);
+                                    ui.Dialogue("Boo", "Oh, aren't I simply devilish? I just stole you a Star!", false);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                    ui.Dialogue("Boo", "Ueeheeheeheehee! Come back real soon!", true);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                } else {
+                                    int coinsToSteal = Random.Range(game.p3.state.getCoins() / 4, 20);
+                                    state.changeCoins(coinsToSteal);
+                                    game.p3.state.changeCoins(-1 * coinsToSteal);
+                                    ui.Dialogue("Boo", "How do you like that? I just stole you " + coinsToSteal + " Coins!", false);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                    ui.Dialogue("Boo", "Ueeheeheeheehee! Come back real soon!", true);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                }
+                            } else if (ui.MostRecentDialogueAnswer() == game.p4.state.charName()) {
+                                ui.Dialogue("Boo", "Alright! Here I go!", false);
+                                yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                yield return new WaitForSeconds(0.1f);
+                                if (game.p4.state.hasItem(BoardItem.Gaddlight)) {
+                                    game.p4.state.removeItem(BoardItem.Gaddlight);
+                                    ui.Dialogue("Boo", "Ugh! You didn't mention they had a Gaddlight! I'm outta here!", true);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                } else if (stealingStars) {
+                                    state.changeCoins(-40);
+                                    state.changeStars(1);
+                                    game.p4.state.changeStars(-1);
+                                    ui.Dialogue("Boo", "Oh, aren't I simply devilish? I just stole you a Star!", false);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                    ui.Dialogue("Boo", "Ueeheeheeheehee! Come back real soon!", true);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                } else {
+                                    int coinsToSteal = Random.Range(game.p4.state.getCoins() / 4, 20);
+                                    state.changeCoins(coinsToSteal);
+                                    game.p4.state.changeCoins(-1 * coinsToSteal);
+                                    ui.Dialogue("Boo", "How do you like that? I just stole you " + coinsToSteal + " Coins!", false);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                    ui.Dialogue("Boo", "Ueeheeheeheehee! Come back real soon!", true);
+                                    yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                    yield return new WaitForSeconds(0.1f);
+                                }
+                            } else {
+                                ui.Dialogue("Boo", "Ugh! Laaaame!", true);
+                                yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                                yield return new WaitForSeconds(0.1f);
+                            }
+                            break;
                         default:
                             usedItem = false;
                             break;
+                    }
+                    if (usedItem) {
+                        state.UsedItemStatTrigger();
                     }
                     break;
                 /*
@@ -274,6 +473,7 @@ public class Player : MonoBehaviour {
                             yield return new WaitUntil(() => targetSpace.donePassingYet());
                             if (targetSpace.ableToLandHere()) {
                                 rollCount -= 1;
+                                state.MovedSpaceStatTrigger();
                             }
                             if (rollCount != 0) {
                                 targetSpace = targetSpace.getNextSpaceInSequence();
@@ -320,5 +520,9 @@ public class Player : MonoBehaviour {
 
     public void SendRoll(int r) {
         rolls.Add(r);
+    }
+
+    public int GetCurrentRollCount() {
+        return rollCount;
     }
 }

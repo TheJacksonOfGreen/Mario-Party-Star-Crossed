@@ -41,6 +41,14 @@ public class BowserSpace : BoardSpace {
                 yield return new WaitForSeconds(0.1f);
                 yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
                 break;
+            case "Yoshi":
+                ui.Dialogue("Bowser", "Oh, hey, it's a Yoshi! I just remembered, I have this really delicious fruit that I found, you'd probably love it!", false);
+                yield return new WaitForSeconds(0.1f);
+                yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                ui.Dialogue("Bowser", "Oh, wait! Silly me! How could I forget? I already ate the whole thing!", false);
+                yield return new WaitForSeconds(0.1f);
+                yield return new WaitUntil(() => ui.WaitForDialogueAnswer());
+                break;
             case "Wario":
                 ui.Dialogue("Bowser", "Ugh...what is that smell?!", false);
                 yield return new WaitForSeconds(0.1f);
@@ -500,6 +508,20 @@ public class BowserSpace : BoardSpace {
             default:
                 break;
         }
+        p.state.UnluckySpaceStatTrigger();
         doneLanding = true;
+    }
+
+    public override int AIValue(PlayerState state, List<PlayerState> rivals) {
+        switch (state.getPlacing()) {
+            case 4:
+                return 0;
+            case 3:
+                return -5;
+            case 2:
+                return -10;
+            default:
+                return -15;
+        }
     }
 }

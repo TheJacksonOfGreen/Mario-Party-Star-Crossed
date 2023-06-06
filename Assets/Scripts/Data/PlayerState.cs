@@ -262,6 +262,22 @@ public class PlayerState {
         }
     }
 
+    public void UsedItemStatTrigger() {
+        this.totalItemsUsed += 1;
+    }
+
+    public void MovedSpaceStatTrigger() {
+        this.totalSpacesMoved += 1;
+    }
+
+    public void UnluckySpaceStatTrigger() {
+        this.totalUnluckySpaces += 1;
+    }
+
+    public void HappeningSpaceStatTrigger() {
+        this.totalHappeningSpaces += 1;
+    }
+
     public Color charColor() {
         switch (this.avatar) {
             case 1:
@@ -293,5 +309,9 @@ public class PlayerState {
             default:
                 return new Color(1.0f, 0.0f, 0.0f, 1.0f);
         }
+    }
+
+    public int getController() {
+        return this.controller;
     }
 }

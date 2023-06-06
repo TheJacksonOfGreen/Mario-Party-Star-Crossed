@@ -310,4 +310,8 @@ public class LuckySpace : BoardSpace {
         }
         doneLanding = true;
     }
+
+    public override int AIValue(PlayerState state, List<PlayerState> rivals) {
+        return 10;
+    }
 }

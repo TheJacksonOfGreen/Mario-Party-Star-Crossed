@@ -36,4 +36,13 @@ public class DuelSpace : BoardSpace {
         }
         doneLanding = true;
     }
+
+    public override int AIValue(PlayerState state, List<PlayerState> rivals) {
+        switch (state.getPlacing()) {
+            case 1:
+                return -5;
+            default:
+                return 15;
+        }
+    }
 }

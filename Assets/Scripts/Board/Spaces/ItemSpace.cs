@@ -125,4 +125,17 @@ public class ItemSpace : BoardSpace {
             return tier5[Random.Range(0, tier5.Count - 1)];
         }
     }
+
+    public override int AIValue(PlayerState state, List<PlayerState> rivals) {
+        switch (state.getPlacing()) {
+            case 4:
+                return 16;
+            case 3:
+                return 13;
+            case 2:
+                return 10;
+            default:
+                return 7;
+        }
+    }
 }
